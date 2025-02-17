@@ -17,7 +17,7 @@ Do the following to complete this assignment:
 
 1. Implement your project with the above requirements.
 3. Test your project to make sure that when someone goes to your main page on Glitch/Heroku/etc., it displays correctly.
-4. Ensure that your project has the proper naming scheme `a4-firstname-lastname` so we can find it.
+4. Ensure that your project has the proper naming scheme `a4-githubusername` so we can find it.
 5. Push to your assignment repository and modify the README to the specifications below. Be sure to add *all* project files.
 
 Sample Readme (delete the above when you're ready to submit, and modify the below so with your links and descriptions)
@@ -25,7 +25,7 @@ Sample Readme (delete the above when you're ready to submit, and modify the belo
 
 ## Your Web Application Title
 
-your hosting link e.g. http://a4-wilsonwong.glitch.me
+Hosting Link (Vercel?):
 
 Include a very brief summary of your project here and what you changed / added to assignment #3. 
 
