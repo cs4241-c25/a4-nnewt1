@@ -27,7 +27,7 @@ Sample Readme (delete the above when you're ready to submit, and modify the belo
 
 Hosting Link (Vercel?):
 
-Alexander Beck's passport-github-demo helped me a lot with this assignment, so I wanted to give credit where credit was due.
+Alexander Beck's passport-github-demo helped me a lot with this assignment, so I wanted to give credit where credit was due. The majority of `index.js` and `login.html` is from his repository.
 
 Include a very brief summary of your project here and what you changed / added to assignment #3. 
 
