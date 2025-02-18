@@ -27,6 +27,8 @@ Sample Readme (delete the above when you're ready to submit, and modify the belo
 
 Hosting Link (Vercel?):
 
+Alexander Beck's passport-github-demo helped me a lot with this assignment, so I wanted to give credit where credit was due.
+
 Include a very brief summary of your project here and what you changed / added to assignment #3. 
 
 Unlike previous assignments, this assignment will be solely graded on whether or not you successfully complete it. Partial credit will be generously given.

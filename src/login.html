@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>CS4241 Assignment 2</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="index.css">
+
+    <!-- get rid of favicon error -->
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+<h1>Login</h1>
+<h3>If you are a new user, register at the bottom!</h3>
+
+<form action="/login" method="post">
+    <div class="formfields">
+        <label for="username">Username: </label><input type="text" id="username" value="">
+        <label for="password">Password: </label><input type="password" id="password" value="">
+    </div>
+    <br>
+    <button>submit</button>
+</form>
+
+<h1>Sign Up</h1>
+<form action="/signup" method="post">
+    <div class="formfields">
+        <label for="username">Username: </label><input type="text" id="newusername" value="">
+        <label for="password">Password: </label><input type="password" id="newpassword" value="">
+    </div>
+    <br>
+    <button>submit</button>
+</form>
+
+</body>
+</html>
