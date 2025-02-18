@@ -1,0 +1,172 @@
+const express = require('express');
+const app = express();
+const port = 3000;
+const dotenv = require('dotenv').config();
+const { MongoClient, Collection } = require('mongodb'); // Note that Collection is only used with JSDocs. It is NOT required.
+const passport = require('passport');
+const session = require('express-session')
+const GitHubStrategy = require('passport-github2').Strategy;
+
+// Destructure process.env to get nice to read variable names
+const {
+    MONGO_USER,
+    MONGO_PASS,
+    MONGO_HOST,
+    MONGO_DBNAME,
+    MONGO_DBCOLLECTION,
+    GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET,
+    EXPRESS_SESSION_SECRET
+} = process.env;
+
+app.use(session({
+    secret: EXPRESS_SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(express.json());
+
+// region DB Connection
+// Connect to the DB
+// These JSDocs make it more convenient to work with the collections since the IDE knows that functions each Collection can use.
+/**
+ * @type {Collection}
+ */
+let DBCollection = null;
+
+/**
+ * Connects to the MongoDB database
+ */
+async function connectToDB() {
+    const uri = `mongodb+srv://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}`;
+    const client = new MongoClient(uri);
+
+    // Note that this connect call is not intended for use in production
+    await client.connect();
+    const db = client.db(MONGO_DBNAME);
+    DBCollection = db.collection(MONGO_DBCOLLECTION);
+}
+
+connectToDB();
+
+// Middleware to check connection to DB
+app.use((req, res, next) => {
+    if (DBCollection !== null) {
+        next();
+    } else {
+        // Could not connect to the DB. Send an error.
+        res.sendStatus(503);
+    }
+});
+// endregion
+
+// region User Serialization
+/**
+ * Serialize the user.
+ * Every time the user logs in, it stores the data in `done`'s `id` parameter (the one after null) in `req.user`.
+ */
+passport.serializeUser(function (user, done) {
+    // I use user._id || user.id to allow for more flexibility of this with MongoDB.
+    // If using Passport Local, you might want to use the MongoDB id object as the primary key.
+    // However, we are using GitHub, so what we want is user.id
+    // Feel free to remove the user._id || part of it, but the `user.id` part is necessary.
+    done(null, { username: user.username, id: user._id || user.id });
+});
+
+/**
+ * Deserialize the user.
+ * Every time the user's session is ended, it removes `obj` from the user's req.
+ */
+passport.deserializeUser(function (obj, done) {
+    done(null, obj);
+});
+// endregion
+// region Strategy
+
+/**
+ * Create the GitHub Strategy.
+ *
+ * Note that the callback URL is OPTIONAL. If it is not provided, it will default to the one configured
+ * in GitHub. See the README for information on how to set that up.
+ *
+ * If you do decide to include the callbackURL, it must be EXACT. Any missmatch from the GitHub one and it will
+ * fail.
+ */
+passport.use(new GitHubStrategy({
+        clientID: GITHUB_CLIENT_ID,
+        clientSecret: GITHUB_CLIENT_SECRET,
+        // callbackURL: "http://localhost:3000/auth/github/callback"
+    },
+    async function (accessToken, refreshToken, profile, done) {
+        // This code will run when the user is successfully logged in with GitHub.
+        process.nextTick(function () {
+            return done(null, profile);
+        });
+    }
+));
+// endregion
+// region GitHub Routes
+// This is the callback to put in GitHub. If the authentication fails, it will redirect them to '/login'.
+app.get('/auth/github/callback',
+    passport.authenticate('github', { session: true, failureRedirect: '/login' }),
+    function (req, res) {
+        // Successful authentication, redirect home.
+        res.redirect('/');
+    });
+
+// The route to redirect the user to when you want to actually have them log in with GitHub.
+// It is what happens when you click on the "Log in with GitHub" button.
+// Note that the scope is 'user:email'. You can read more about possible scopes here:
+// https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps
+// You should not need anything other than the 'user:email' if just authenticating with GitHub.
+// <a href="/auth/github">Login with GitHub</a>
+app.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
+// endregion
+
+function ensureAuth(req, res, next) {
+    if (req.isAuthenticated()) {
+        next();
+    } else {
+        res.redirect("/login");
+    }
+}
+
+// region login and root routes
+app.get('/', ensureAuth, (req, res) => {
+    // User is logged in
+    res.sendFile(__dirname + "/public/index.html");
+});
+
+app.get("/login", (req, res) => {
+    // User is logged in
+    if (req.user) {
+        res.redirect("/");
+    } else {
+        // User is not logged in
+        res.sendFile(__dirname + "/public/login.html");
+    }
+});
+// endregion
+
+// Have the user go to /logout and it will log them out.
+// i.e. <a href="/logout">Logout</a>
+app.get("/logout", (req, res) => {
+    req.logout(() => { });
+    res.redirect('/');
+});
+
+app.use(express.static('public'));
+
+app.get("/load", ensureAuth, async (req, res) => {
+    // Note that here I am using the username as the key.
+    const userdata = await DBCollection.find({ username: req.user.username }).toArray();
+    // What I am doing here is attaching the username to the front of the array
+    // and then putting the rest of the data after the username
+    res.json([{ username: req.user.username }, ...userdata]);
+});
+
+app.listen(process.env.PORT || port, () => {
+    console.log("Server listening on port " + port);
+});

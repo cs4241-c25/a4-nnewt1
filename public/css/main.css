@@ -1,0 +1,36 @@
+body {
+    background:darkslategray;
+    color:white;
+    font-family: "Roboto", serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+nav {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+    justify-items: right;
+}
+
+form {
+    background-color: slategray;
+    padding: 20px;
+}
+
+.formfields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#datadisplay {
+    padding: 20px;
+    background-color: slategray;
+}
+
+#datadisplay th, #datadisplay td {
+    padding: 10px;
+}
+
