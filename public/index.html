@@ -20,7 +20,16 @@
 <form id="assignmentform">
   <div class="formfields">
     <label for="assignmentname">Assignment: </label><input type="text" id="assignmentname" name="assignmentname" value="">
-    <label for="classname">Class: </label><input type="text" id="classname" name="classname" value="">
+    <label>Class: </label>
+    <div>
+      <input type="radio" id="Webware" name="classname" value=""><label for="Webware">Webware</label>
+    </div>
+    <div>
+      <input type="radio" id="OOAD" name="classname" value=""><label for="OOAD">OOAD</label>
+    </div>
+    <div>
+      <input type="radio" id="ID2050" name="classname" value=""><label for="ID2050">ID2050</label>
+    </div>
     <label for="deadline">Deadline: </label><input type="date" id="deadline" name="deadline" value="">
   </div>
   <br>
@@ -33,6 +42,7 @@
     <th>Class</th>
     <th>Deadline</th>
     <th>Priority</th>
+    <th>Actions</th>
   </tr>
 </table>
 

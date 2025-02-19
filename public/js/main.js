@@ -16,6 +16,17 @@ window.onload = async function() {
         newRow.insertCell(1).textContent = assignments[i].classname
         newRow.insertCell(2).textContent = assignments[i].deadline
         newRow.insertCell(3).textContent = assignments[i].priority
+
+        // Add a modify and delete button to each row
+        const actionsCell = newRow.insertCell(4)
+        const modifyButton = document.createElement("button")
+        const deleteButton = document.createElement("button")
+        modifyButton.textContent = "Modify"
+        deleteButton.textContent = "Delete"
+        modifyButton.onclick = () => modifyAssignment(assignments[i], newRow)
+        deleteButton.onclick = () => deleteAssignment(assignments[i], newRow)
+        actionsCell.appendChild(modifyButton)
+        actionsCell.appendChild(deleteButton)
     }
 
 }
@@ -28,9 +39,9 @@ const submit = async function( event ) {
     event.preventDefault()
 
     const assignmentinput = document.querySelector( "#assignmentname" ),
-        classinput = document.querySelector( "#classname" ),
+        classinput = document.querySelector( "input[name=classname]:checked" ),
         deadlineinput = document.querySelector( "#deadline" ),
-        json = { assignmentname: assignmentinput.value , classname: classinput.value, deadline: deadlineinput.value},
+        json = { assignmentname: assignmentinput.value , classname: classinput.id, deadline: deadlineinput.value},
         body = JSON.stringify( json )
 
     const response = await fetch( "/submit", {
@@ -50,5 +61,70 @@ const submit = async function( event ) {
     newRow.insertCell(2).textContent = newAssignment.deadline
     newRow.insertCell(3).textContent = newAssignment.priority
 
+    // Add a modify and delete button to each row
+    const actionsCell = newRow.insertCell(4)
+    const modifyButton = document.createElement("button")
+    const deleteButton = document.createElement("button")
+    modifyButton.textContent = "Modify"
+    deleteButton.textContent = "Delete"
+    modifyButton.onclick = () => modifyAssignment(newAssignment, newRow)
+    deleteButton.onclick = () => deleteAssignment(newAssignment, newRow)
+    actionsCell.appendChild(modifyButton)
+    actionsCell.appendChild(deleteButton)
+
+    // Clear the form for ease of use
+    assignmentinput.value = ""
+    classinput.checked = false
+    deadlineinput.value = ""
+
 }
 
+const modifyAssignment = async function( assignment, row ) {
+
+    const newassignmentname = document.querySelector( "#assignmentname" );
+    const newclassname = document.querySelector( "input[name=classname]" );
+    const newdeadline = document.querySelector( "#deadline" );
+
+    newassignmentname.value = assignment.assignmentname;
+    newclassname.id = assignment.classname;
+    newdeadline.value = assignment.deadline;
+
+    const button = document.querySelector("button");
+    button.textContent = "Modify";
+    button.onclick = async function( event ) {
+        event.preventDefault()
+
+        const json = { assignmentname: newassignmentname.value , classname: newclassname.id, deadline: newdeadline.value},
+            body = JSON.stringify( json )
+
+        const response = await fetch( "/modify/" + assignment._id, {
+            method:'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body
+        })
+
+        const updatedAssignment = await response.json()
+        console.log( "Updated Assignment:", updatedAssignment )
+
+        row.cells[0].textContent = updatedAssignment.assignmentname
+        row.cells[1].textContent = updatedAssignment.classname
+        row.cells[2].textContent = updatedAssignment.deadline
+        row.cells[3].textContent = updatedAssignment.priority
+
+        // Clear the form for ease of use
+        newassignmentname.value = ""
+        newclassname.checked = false
+        newdeadline.value = ""
+
+    }
+}
+
+const deleteAssignment = async function( assignment, row ) {
+    const response = await fetch( "/delete/" + assignment._id, {
+        method:'DELETE'
+    })
+
+    if( response.status === 200 ) {
+        row.remove()
+    }
+}

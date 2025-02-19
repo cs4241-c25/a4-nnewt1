@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const port = 3000;
 const dotenv = require('dotenv').config();
-const { MongoClient, Collection } = require('mongodb'); // Note that Collection is only used with JSDocs. It is NOT required.
+const { MongoClient, Collection, ObjectId } = require('mongodb'); // Note that Collection is only used with JSDocs. It is NOT required.
 const passport = require('passport');
 const session = require('express-session')
 const GitHubStrategy = require('passport-github2').Strategy;
@@ -204,6 +204,49 @@ app.post("/submit", ensureAuth, async (req, res) => {
         res.sendStatus(500);
     });
 
+});
+
+// Delete route
+app.delete("/delete/:id", ensureAuth, async (req, res) => {
+    const id = req.params.id;
+    await DBCollection.deleteOne({ _id: new ObjectId(id) }).then(r => {
+        res.sendStatus(200);
+    }).catch(e => {
+        res.sendStatus(500);
+    });
+});
+
+// Update route
+app.put("/update/:id", ensureAuth, async (req, res) => {
+    const id = req.params.id;
+    const { assignmentname, classname, deadline } = req.body;
+
+    let priority = function() {
+        let today = new Date();
+        let due = new Date(deadline);
+        let diff = due - today;
+        let days = diff / (1000 * 60 * 60 * 24);
+        if (days < 1) {
+            return "High";
+        } else if (days < 3) {
+            return "Medium";
+        } else {
+            return "Low";
+        }
+    }
+
+    const updatedAssignment = {
+        assignmentname: assignmentname,
+        classname: classname,
+        deadline: deadline,
+        priority: priority()
+    }
+
+    await DBCollection.updateOne({ _id: new ObjectId(id) }, { $set: updatedAssignment }).then(r => {
+        res.json(updatedAssignment);
+    }).catch(e => {
+        res.sendStatus(500);
+    });
 });
 
 app.listen(process.env.PORT || port, () => {
