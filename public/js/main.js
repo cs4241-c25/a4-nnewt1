@@ -82,22 +82,30 @@ const submit = async function( event ) {
 const modifyAssignment = async function( assignment, row ) {
 
     const newassignmentname = document.querySelector( "#assignmentname" );
-    const newclassname = document.querySelector( "input[name=classname]" );
     const newdeadline = document.querySelector( "#deadline" );
 
     newassignmentname.value = assignment.assignmentname;
-    newclassname.id = assignment.classname;
     newdeadline.value = assignment.deadline;
+
+    // Get the class radio button
+    const classoptions = document.querySelectorAll( "input[name=classname]" );
+    for( let i = 0; i < classoptions.length; i++ ) {
+        if( classoptions[i].id === assignment.classname ) {
+            classoptions[i].checked = true;
+        }
+    }
 
     const button = document.querySelector("button");
     button.textContent = "Modify";
     button.onclick = async function( event ) {
         event.preventDefault()
 
-        const json = { assignmentname: newassignmentname.value , classname: newclassname.id, deadline: newdeadline.value},
+        const classoptions = document.querySelector( "input[name=classname]:checked" );
+        console.log(classoptions.id)
+        const json = { assignmentname: newassignmentname.value , classname: classoptions.id, deadline: newdeadline.value},
             body = JSON.stringify( json )
 
-        const response = await fetch( "/modify/" + assignment._id, {
+        const response = await fetch( "/update/" + assignment._id, {
             method:'PUT',
             headers: {'Content-Type': 'application/json'},
             body
@@ -113,7 +121,7 @@ const modifyAssignment = async function( assignment, row ) {
 
         // Clear the form for ease of use
         newassignmentname.value = ""
-        newclassname.checked = false
+        classoptions.checked = false
         newdeadline.value = ""
 
     }
